@@ -36,7 +36,7 @@ public class EmailService {
                 turno.getNombre(),
                 fechaFormateada,
                 turno.getHora(),
-                turno.getServico(),
+                turno.getServicio(),
                 turno.getPrecio(),
                 frontendUrl,
                 turno.getTokenCancelacion()
