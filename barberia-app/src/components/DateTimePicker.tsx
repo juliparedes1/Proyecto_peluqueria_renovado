@@ -27,7 +27,7 @@ const allTimeSlots = [
 function getNext14Days() {
   const dates: { fecha: string; diaSemana: number }[] = [];
   const today = new Date();
-  for (let i = 1; i <= 14; i++) {
+  for (let i = 0; i <= 14; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     dates.push({
@@ -121,68 +121,72 @@ export default function DateTimePicker({ onSelect, selectedDate, selectedTime }:
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Elegí día y horario</h2>
-      
-      <div>
-        <h3 className="text-lg font-medium text-gray-700 mb-3">Día</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {daysWithInfo.map(({ fecha, diaSemana }) => {
-            const dateObj = new Date(fecha + 'T00:00:00');
-            const dayName = dateObj.toLocaleDateString('es-AR', { weekday: 'short' });
-            const dayNum = dateObj.getDate();
-            const month = dateObj.toLocaleDateString('es-AR', { month: 'short' });
-            const estaAbierto = isDiaAbierto(diaSemana);
-            
-            return (
-              <button
-                key={fecha}
-                onClick={() => handleDateClick(fecha, diaSemana)}
-                disabled={!estaAbierto}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  selectedDate === fecha
-                    ? 'border-black bg-gray-900 text-white'
-                    : estaAbierto
-                    ? 'border-gray-200 bg-white hover:border-gray-400'
-                    : 'border-gray-100 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-                }`}
-              >
-                <div className="text-sm capitalize">{dayName}</div>
-                <div className="text-xl font-bold">{dayNum}</div>
-                <div className="text-sm capitalize">{month}</div>
-                {!estaAbierto && <div className="text-xs text-red-500">Cerrado</div>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {selectedDate && (
-        <div>
-          <h3 className="text-lg font-medium text-gray-700 mb-3">Horario</h3>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-            {timeSlots.map((time) => {
-              const ocupado = isHoraOcupada(time);
-              return (
-                <button
-                  key={time}
-                  onClick={() => handleTimeClick(time)}
-                  disabled={ocupado}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    selectedTime === time
-                      ? 'border-black bg-gray-900 text-white'
-                      : ocupado
-                      ? 'border-gray-300 bg-gray-400 text-gray-600 cursor-not-allowed'
-                      : 'border-gray-200 bg-white hover:border-gray-400'
-                  }`}
-                >
-                  {time}
-                  {ocupado && <div className="text-xs">Ocupado</div>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+  <h2 className="text-2xl font-bold text-gray-900">Elegí día y horario</h2>
+  
+  <div>
+    <h3 className="text-lg font-semibold text-gray-800 mb-3">Día</h3>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {daysWithInfo.map(({ fecha, diaSemana }) => {
+        const dateObj = new Date(fecha + 'T00:00:00');
+        const dayName = dateObj.toLocaleDateString('es-AR', { weekday: 'short' });
+        const dayNum = dateObj.getDate();
+        const month = dateObj.toLocaleDateString('es-AR', { month: 'short' });
+        const estaAbierto = isDiaAbierto(diaSemana);
+        const seleccionado = selectedDate === fecha;
+        
+        return (
+          <button
+            key={fecha}
+            onClick={() => handleDateClick(fecha, diaSemana)}
+            disabled={!estaAbierto}
+            className={`p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center ${
+              seleccionado
+                ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600 ring-offset-1' 
+                : estaAbierto
+                ? 'border-gray-400 bg-white text-gray-800 hover:border-black hover:bg-gray-50'
+                : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-40'
+            }`}
+          >
+            <span className={`text-xs font-bold uppercase ${seleccionado ? 'text-blue-700' : 'text-gray-500'}`}>
+              {dayName}
+            </span>
+            <span className="text-2xl font-black">{dayNum}</span>
+            <span className="text-sm font-medium capitalize">{month}</span>
+            {!estaAbierto && <span className="text-[10px] font-bold text-red-500 mt-1">CERRADO</span>}
+          </button>
+        );
+      })}
     </div>
+  </div>
+
+  {selectedDate && (
+    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+      <h3 className="text-lg font-semibold text-gray-800 mb-3">Horario disponible</h3>
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        {timeSlots.map((time) => {
+          const ocupado = isHoraOcupada(time);
+          const seleccionado = selectedTime === time;
+          return (
+            <button
+              key={time}
+              onClick={() => handleTimeClick(time)}
+              disabled={ocupado}
+              className={`p-3 rounded-lg border-2 font-bold transition-all ${
+                seleccionado
+                  ? 'border-blue-600 bg-blue-600 text-white shadow-md'
+                  : ocupado
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                  : 'border-gray-400 bg-white text-gray-900 hover:border-black'
+              }`}
+            >
+              {time}
+              {ocupado && <div className="text-[9px] uppercase tracking-tighter">Ocupado</div>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  )}
+</div>
   );
 }
