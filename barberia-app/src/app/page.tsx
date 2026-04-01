@@ -142,9 +142,14 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-gray-900 text-white py-6 px-4">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold">BARBERÍA</h1>
-            <p className="text-gray-400">Reservá tu turno online</p>
+          <div className="max-w-3xl mx-auto flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">BARBERÍA</h1>
+              <p className="text-gray-400">Reservá tu turno online</p>
+            </div>
+            <a href="/login" className="text-sm text-gray-400 hover:text-white underline">
+              Acceso Admin
+            </a>
           </div>
         </header>
 
