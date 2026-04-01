@@ -28,4 +28,7 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
     List<String> findHorasOcupadasBySalonIdAndFecha(@Param("salonId") Long salonId, @Param("fecha") LocalDate fecha);
     
     List<Turno> findBySalonId(Long salonId);
+
+    @Query("SELECT t FROM Turno t WHERE t.fecha = :fecha AND t.hora = :hora AND t.estado = 'CONFIRMADO'")
+    Optional<Turno> findByFechaAndHoraAndConfirmado(@Param("fecha") LocalDate fecha, @Param("hora") String hora);
 }
