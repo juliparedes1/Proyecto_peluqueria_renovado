@@ -6,6 +6,7 @@ interface DateTimePickerProps {
   onSelect: (date: string, time: string) => void;
   selectedDate: string | null;
   selectedTime: string | null;
+  salonId: number;
 }
 
 interface Disponibilidad {
@@ -38,7 +39,7 @@ function getNext14Days() {
   return dates;
 }
 
-export default function DateTimePicker({ onSelect, selectedDate, selectedTime }: DateTimePickerProps) {
+export default function DateTimePicker({ onSelect, selectedDate, selectedTime, salonId }: DateTimePickerProps) {
   const [disponibilidad, setDisponibilidad] = useState<Disponibilidad[]>([]);
   const [horasOcupadas, setHorasOcupadas] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,25 +48,25 @@ export default function DateTimePicker({ onSelect, selectedDate, selectedTime }:
   useEffect(() => {
     const fetchDisponibilidad = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/disponibilidad`);
+        const res = await fetch(`${API_URL}/api/salon/${salonId}/disponibilidad`);
         const data = await res.json();
         setDisponibilidad(data);
-        
-        await fetch(`${API_URL}/api/disponibilidad/inicializar`, { method: 'POST' });
       } catch (error) {
         console.error('Error fetching disponibilidad:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchDisponibilidad();
-  }, []);
+    if (salonId) {
+      fetchDisponibilidad();
+    }
+  }, [salonId]);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && salonId) {
       const fetchHorasOcupadas = async () => {
         try {
-          const res = await fetch(`${API_URL}/api/turnos/ocupadas/${selectedDate}`);
+          const res = await fetch(`${API_URL}/api/turnos/ocupadas/${selectedDate}?salonId=${salonId}`);
           const data = await res.json();
           setHorasOcupadas(data);
         } catch (error) {
@@ -74,7 +75,7 @@ export default function DateTimePicker({ onSelect, selectedDate, selectedTime }:
       };
       fetchHorasOcupadas();
     }
-  }, [selectedDate]);
+  }, [selectedDate, salonId]);
 
   const isDiaAbierto = (diaSemana: number): boolean => {
     const disp = disponibilidad.find(d => d.diaSemana === diaSemana);

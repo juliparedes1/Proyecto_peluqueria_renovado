@@ -1,26 +1,81 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ServiceSelector from '@/components/ServiceSelector';
 import DateTimePicker from '@/components/DateTimePicker';
 import ClientForm from '@/components/ClientForm';
 
-interface Service {
-  id: string;
-  name: string;
-  price: number;
+interface Salon {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono: string;
+  ubicacion: string;
+  estaActivo: boolean;
 }
 
-type Step = 'service' | 'datetime' | 'client' | 'success';
+interface Service {
+  id: number;
+  nombre: string;
+  precio: number;
+  duracionMinutos: number;
+}
+
+type Step = 'salon' | 'service' | 'datetime' | 'client' | 'success';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function Home() {
-  const [step, setStep] = useState<Step>('service');
+  const [step, setStep] = useState<Step>('salon');
+  const [salones, setSalones] = useState<Salon[]>([]);
+  const [salonSeleccionado, setSalonSeleccionado] = useState<Salon | null>(null);
+  const [servicios, setServicios] = useState<Service[]>([]);
   const [service, setService] = useState<Service | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchSalones = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/salons`);
+        if (res.ok) {
+          const data = await res.json();
+          const activos = data.filter((s: Salon) => s.estaActivo);
+          setSalones(activos);
+          if (activos.length === 1) {
+            setSalonSeleccionado(activos[0]);
+            setStep('service');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching salones:', error);
+      }
+    };
+    fetchSalones();
+  }, []);
+
+  useEffect(() => {
+    if (salonSeleccionado) {
+      const fetchServicios = async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/salon/${salonSeleccionado.id}/servicios`);
+          if (res.ok) {
+            const data = await res.json();
+            setServicios(data);
+          }
+        } catch (error) {
+          console.error('Error fetching servicios:', error);
+        }
+      };
+      fetchServicios();
+    }
+  }, [salonSeleccionado]);
+
+  const handleSalonSelect = (salon: Salon) => {
+    setSalonSeleccionado(salon);
+    setStep('service');
+  };
 
   const handleServiceSelect = (selected: Service) => {
     setService(selected);
@@ -40,7 +95,7 @@ export default function Home() {
   };
 
   const handleClientSubmit = async (nombre: string, telefono: string, email: string) => {
-    if (!service || !date || !time) return;
+    if (!service || !date || !time || !salonSeleccionado) return;
 
     setIsSubmitting(true);
     try {
@@ -48,13 +103,14 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          servicio: service.name,
-          precio: service.price,
+          servicio: service.nombre,
+          precio: service.precio,
           fecha: date,
           hora: time,
           nombre,
           telefono,
           email,
+          salonId: salonSeleccionado.id,
         }),
       });
 
@@ -82,6 +138,44 @@ export default function Home() {
     });
   };
 
+  if (step === 'salon') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-gray-900 text-white py-6 px-4">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-2xl font-bold">BARBERÍA</h1>
+            <p className="text-gray-400">Reservá tu turno online</p>
+          </div>
+        </header>
+
+        <main className="max-w-3xl mx-auto p-4 md:p-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Seleccioná tu barbería</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {salones.map((salon) => (
+                <button
+                  key={salon.id}
+                  onClick={() => handleSalonSelect(salon)}
+                  className="p-6 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-400 hover:shadow-md transition-all text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold text-xl">
+                      {salon.nombre.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">{salon.nombre}</h3>
+                      <p className="text-sm text-gray-500">{salon.ubicacion}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (step === 'success') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -101,15 +195,16 @@ export default function Home() {
           </p>
           <div className="bg-gray-100 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-600">Servicio</p>
-            <p className="font-semibold text-gray-900">{service?.name}</p>
-            <p className="font-bold text-lg text-gray-900">${service?.price}</p>
+            <p className="font-semibold text-gray-900">{service?.nombre}</p>
+            <p className="font-bold text-lg text-gray-900">${service?.precio}</p>
           </div>
           <button
             onClick={() => {
-              setStep('service');
+              setStep('salon');
               setService(null);
               setDate(null);
               setTime(null);
+              setSalonSeleccionado(null);
             }}
             className="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
           >
@@ -123,9 +218,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gray-900 text-white py-6 px-4">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold">BARBERÍA</h1>
-          <p className="text-gray-400">Reservá tu turno online</p>
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{salonSeleccionado?.nombre || 'BARBERÍA'}</h1>
+            <p className="text-gray-400">{salonSeleccionado?.ubicacion}</p>
+          </div>
+          <button
+            onClick={() => setStep('salon')}
+            className="text-sm text-gray-400 hover:text-white"
+          >
+            Cambiar
+          </button>
         </div>
       </header>
 
@@ -148,7 +251,11 @@ export default function Home() {
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
           {step === 'service' && (
             <>
-              <ServiceSelector onSelect={handleServiceSelect} selectedService={service} />
+              <ServiceSelector 
+                onSelect={handleServiceSelect} 
+                selectedService={service}
+                servicios={servicios}
+              />
               <button
                 onClick={handleContinue}
                 disabled={!service}
@@ -164,7 +271,8 @@ export default function Home() {
               <DateTimePicker 
                 onSelect={handleDateTimeSelect} 
                 selectedDate={date} 
-                selectedTime={time} 
+                selectedTime={time}
+                salonId={salonSeleccionado?.id || 0}
               />
               <button
                 onClick={handleContinue}
@@ -180,7 +288,7 @@ export default function Home() {
             <>
               <div className="mb-6 p-4 bg-gray-100 rounded-lg">
                 <h3 className="font-semibold text-gray-700 mb-2">Resumen del turno</h3>
-                <p className="text-gray-600">{service?.name} - ${service?.price}</p>
+                <p className="text-gray-600">{service?.nombre} - ${service?.precio}</p>
                 <p className="text-gray-600">{date && formatDate(date)} a las {time}</p>
               </div>
               <ClientForm onSubmit={handleClientSubmit} isSubmitting={isSubmitting} />

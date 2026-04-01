@@ -1,29 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-
 interface Service {
-  id: string;
-  name: string;
-  price: number;
+  id: number;
+  nombre: string;
+  precio: number;
+  duracionMinutos: number;
 }
-
-const services: Service[] = [
-  { id: 'corte', name: 'Corte de pelo', price: 2500 },
-  { id: 'corte-barba', name: 'Corte + Barba', price: 3500 },
-];
 
 interface ServiceSelectorProps {
   onSelect: (service: Service) => void;
   selectedService: Service | null;
+  servicios: Service[];
 }
 
-export default function ServiceSelector({ onSelect, selectedService }: ServiceSelectorProps) {
+export default function ServiceSelector({ onSelect, selectedService, servicios }: ServiceSelectorProps) {
+  const servicesToShow = servicios.length > 0 ? servicios : [
+    { id: 1, nombre: 'Corte de pelo', precio: 2500, duracionMinutos: 30 },
+    { id: 2, nombre: 'Corte + Barba', precio: 3500, duracionMinutos: 45 },
+  ];
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Seleccioná tu servicio</h2>
       <div className="grid gap-4 md:grid-cols-2">
-        {services.map((service) => (
+        {servicesToShow.map((service) => (
           <button
             key={service.id}
             onClick={() => onSelect(service)}
@@ -35,11 +35,14 @@ export default function ServiceSelector({ onSelect, selectedService }: ServiceSe
           >
             <div className="flex justify-between items-center">
               <span className={`text-lg font-semibold ${selectedService?.id === service.id ? 'text-white' : 'text-gray-800'}`}>
-                {service.name}
+                {service.nombre}
               </span>
               <span className={`text-2xl font-bold ${selectedService?.id === service.id ? 'text-yellow-400' : 'text-gray-900'}`}>
-                ${service.price}
+                ${service.precio}
               </span>
+            </div>
+            <div className={`text-sm mt-2 ${selectedService?.id === service.id ? 'text-gray-300' : 'text-gray-500'}`}>
+              Duración: {service.duracionMinutos} minutos
             </div>
           </button>
         ))}

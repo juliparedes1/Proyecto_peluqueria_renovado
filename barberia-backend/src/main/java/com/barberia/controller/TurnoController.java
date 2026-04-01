@@ -41,13 +41,17 @@ public class TurnoController {
     }
     
     @GetMapping("/fecha/{fecha}")
-    public ResponseEntity<List<Turno>> getTurnosPorFecha(@PathVariable String fecha) {
-        return ResponseEntity.ok(turnoService.getTurnosPorFecha(fecha));
+    public ResponseEntity<List<Turno>> getTurnosPorFecha(
+            @PathVariable String fecha,
+            @RequestParam Long salonId) {
+        return ResponseEntity.ok(turnoService.getTurnosPorFecha(salonId, fecha));
     }
     
     @GetMapping("/ocupadas/{fecha}")
-    public ResponseEntity<List<String>> getHorasOcupadas(@PathVariable String fecha) {
-        return ResponseEntity.ok(turnoService.getHorasOcupadas(fecha));
+    public ResponseEntity<List<String>> getHorasOcupadas(
+            @PathVariable String fecha,
+            @RequestParam Long salonId) {
+        return ResponseEntity.ok(turnoService.getHorasOcupadas(salonId, fecha));
     }
     
     @PostMapping("/cancelar")
@@ -87,7 +91,7 @@ public class TurnoController {
     }
     
     @GetMapping
-    public ResponseEntity<List<Turno>> getAllTurnos() {
-        return ResponseEntity.ok(turnoService.getAllTurnos());
+    public ResponseEntity<List<Turno>> getAllTurnos(@RequestParam Long salonId) {
+        return ResponseEntity.ok(turnoService.getAllTurnos(salonId));
     }
 }

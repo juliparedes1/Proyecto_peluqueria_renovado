@@ -29,4 +29,7 @@ public class TurnoRequest {
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email debe ser válido")
     private String email;
+    
+    @NotNull(message = "El salón es obligatorio")
+    private Long salonId;
 }
