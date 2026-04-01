@@ -12,15 +12,20 @@ import java.util.Optional;
 @Repository
 public interface TurnoRepository extends JpaRepository<Turno, Long> {
     
-    List<Turno> findByFechaAndEstado(LocalDate fecha, String estado);
+    List<Turno> findBySalonIdAndFechaAndEstado(Long salonId, LocalDate fecha, String estado);
     
-    @Query("SELECT t FROM Turno t WHERE t.fecha = :fecha AND t.hora = :hora AND t.estado = 'CONFIRMADO'")
-    Optional<Turno> findByFechaAndHoraAndConfirmado(@Param("fecha") LocalDate fecha, @Param("hora") String hora);
+    @Query("SELECT t FROM Turno t WHERE t.salon.id = :salonId AND t.fecha = :fecha AND t.hora = :hora AND t.estado = 'CONFIRMADO'")
+    Optional<Turno> findBySalonIdAndFechaAndHoraAndConfirmado(
+        @Param("salonId") Long salonId, 
+        @Param("fecha") LocalDate fecha, 
+        @Param("hora") String hora);
     
     Optional<Turno> findByTokenCancelacionAndEstado(String token, String estado);
     
     Optional<Turno> findByTokenCancelacion(String token);
     
-    @Query("SELECT t.hora FROM Turno t WHERE t.fecha = :fecha AND t.estado = 'CONFIRMADO'")
-    List<String> findHorasOcupadasByFecha(@Param("fecha") LocalDate fecha);
+    @Query("SELECT t.hora FROM Turno t WHERE t.salon.id = :salonId AND t.fecha = :fecha AND t.estado = 'CONFIRMADO'")
+    List<String> findHorasOcupadasBySalonIdAndFecha(@Param("salonId") Long salonId, @Param("fecha") LocalDate fecha);
+    
+    List<Turno> findBySalonId(Long salonId);
 }

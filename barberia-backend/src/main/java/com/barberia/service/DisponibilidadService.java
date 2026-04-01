@@ -1,7 +1,9 @@
 package com.barberia.service;
 
 import com.barberia.model.Disponibilidad;
+import com.barberia.model.Salon;
 import com.barberia.repository.DisponibilidadRepository;
+import com.barberia.repository.SalonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -17,42 +19,47 @@ public class DisponibilidadService {
     @Autowired
     private DisponibilidadRepository disponibilidadRepository;
     
-    public void inicializarDisponibilidad() {
-        if (disponibilidadRepository.count() == 0) {
-            // Por defecto: Lunes a sábado abiertos, domingo cerrado
-            disponibilidadRepository.save(new Disponibilidad(0, false, null, null)); // Domingo
-            disponibilidadRepository.save(new Disponibilidad(1, true, "09:00", "18:00")); // Lunes
-            disponibilidadRepository.save(new Disponibilidad(2, true, "09:00", "18:00")); // Martes
-            disponibilidadRepository.save(new Disponibilidad(3, true, "09:00", "18:00")); // Miércoles
-            disponibilidadRepository.save(new Disponibilidad(4, true, "09:00", "18:00")); // Jueves
-            disponibilidadRepository.save(new Disponibilidad(5, true, "09:00", "18:00")); // Viernes
-            disponibilidadRepository.save(new Disponibilidad(6, true, "09:00", "18:00")); // Sábado
+    @Autowired
+    private SalonRepository salonRepository;
+    
+    public void inicializarDisponibilidad(Long salonId) {
+        if (disponibilidadRepository.findBySalonId(salonId).isEmpty()) {
+            Salon salon = salonRepository.findById(salonId)
+                .orElseThrow(() -> new RuntimeException("Salón no encontrado"));
+            
+            disponibilidadRepository.save(new Disponibilidad(salon, 0, false, null, null));
+            disponibilidadRepository.save(new Disponibilidad(salon, 1, true, "09:00", "18:00"));
+            disponibilidadRepository.save(new Disponibilidad(salon, 2, true, "09:00", "18:00"));
+            disponibilidadRepository.save(new Disponibilidad(salon, 3, true, "09:00", "18:00"));
+            disponibilidadRepository.save(new Disponibilidad(salon, 4, true, "09:00", "18:00"));
+            disponibilidadRepository.save(new Disponibilidad(salon, 5, true, "09:00", "18:00"));
+            disponibilidadRepository.save(new Disponibilidad(salon, 6, true, "09:00", "18:00"));
         }
     }
     
-    public List<Disponibilidad> getAllDisponibilidad() {
-        return disponibilidadRepository.findAll();
+    public List<Disponibilidad> getAllDisponibilidad(Long salonId) {
+        return disponibilidadRepository.findBySalonId(salonId);
     }
     
-    public boolean isDiaAbierto(Integer diaSemana) {
-        return disponibilidadRepository.findByDiaSemana(diaSemana)
-                .map(Disponibilidad::getEstaAbierto)
-                .orElse(false);
+    public boolean isDiaAbierto(Long salonId, Integer diaSemana) {
+        return disponibilidadRepository.findBySalonIdAndDiaSemana(salonId, diaSemana)
+            .map(Disponibilidad::getEstaAbierto)
+            .orElse(false);
     }
     
-    public Disponibilidad getDisponibilidadPorDia(Integer diaSemana) {
-        return disponibilidadRepository.findByDiaSemana(diaSemana).orElse(null);
+    public Disponibilidad getDisponibilidadPorDia(Long salonId, Integer diaSemana) {
+        return disponibilidadRepository.findBySalonIdAndDiaSemana(salonId, diaSemana).orElse(null);
     }
     
     public Disponibilidad guardarDisponibilidad(Disponibilidad disponibilidad) {
         return disponibilidadRepository.save(disponibilidad);
     }
     
-    public List<Integer> getDiasAbiertos() {
-        return disponibilidadRepository.findAll().stream()
-                .filter(Disponibilidad::getEstaAbierto)
-                .map(Disponibilidad::getDiaSemana)
-                .collect(Collectors.toList());
+    public List<Integer> getDiasAbiertos(Long salonId) {
+        return disponibilidadRepository.findBySalonId(salonId).stream()
+            .filter(Disponibilidad::getEstaAbierto)
+            .map(Disponibilidad::getDiaSemana)
+            .collect(Collectors.toList());
     }
     
     public String getNombreDia(Integer diaSemana) {

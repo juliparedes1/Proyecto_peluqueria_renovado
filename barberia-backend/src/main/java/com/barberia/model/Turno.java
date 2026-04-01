@@ -2,7 +2,6 @@ package com.barberia.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -18,6 +17,10 @@ public class Turno {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "salon_id", nullable = false)
+    private Salon salon;
+    
     @Column(name = "servicio", nullable = false)
     private String servicio;
     
@@ -28,7 +31,7 @@ public class Turno {
     private LocalDate fecha;
     
     @Column(name = "hora", nullable = false)
-    private String hora; // Formato "HH:mm"
+    private String hora;
     
     @Column(name = "nombre", nullable = false)
     private String nombre;
@@ -40,7 +43,7 @@ public class Turno {
     private String email;
     
     @Column(name = "estado", nullable = false)
-    private String estado; // "CONFIRMADO", "CANCELADO"
+    private String estado;
     
     @Column(name = "token_cancelacion")
     private String tokenCancelacion;
@@ -60,18 +63,5 @@ public class Turno {
         if (tokenCancelacion == null) {
             tokenCancelacion = java.util.UUID.randomUUID().toString();
         }
-    }
-    
-    public Turno(String servicio, Integer precio, LocalDate fecha, String hora, 
-                  String nombre, String telefono, String email) {
-        this.servicio = servicio;
-        this.precio = precio;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.nombre = nombre;
-        this.telefono = telefono;
-        this.email = email;
-        this.estado = "CONFIRMADO";
-        this.tokenCancelacion = java.util.UUID.randomUUID().toString();
     }
 }

@@ -50,4 +50,32 @@ public class EmailService {
             System.err.println("Error al enviar email: " + e.getMessage());
         }
     }
+    
+    public void enviarCredencialesAdmin(String email, String password, String nombreSalon) {
+        SimpleMailMessage mensaje = new SimpleMailMessage();
+        mensaje.setTo(email);
+        mensaje.setSubject("Bienvenido a la plataforma - Credenciales de acceso");
+        
+        String cuerpo = String.format(
+            "Bienvenido a la plataforma de gestión de barbería.\n\n" +
+            "Se ha creado una cuenta para el salón: %s\n\n" +
+            "Credenciales de acceso:\n" +
+            "Email: %s\n" +
+            "Password temporal: %s\n\n" +
+            "Por seguridad, le recomendamos cambiar su contraseña después del primer ingreso.\n\n" +
+            "Saludos,\n" +
+            "Equipo de Barbería",
+            nombreSalon,
+            email,
+            password
+        );
+        
+        mensaje.setText(cuerpo);
+        
+        try {
+            mailSender.send(mensaje);
+        } catch (Exception e) {
+            System.err.println("Error al enviar email de credenciales: " + e.getMessage());
+        }
+    }
 }
